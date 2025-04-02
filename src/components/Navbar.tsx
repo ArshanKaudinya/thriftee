@@ -1,13 +1,34 @@
+'use client'
+
+import Link from 'next/link'
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/items', label: 'Browse' },
+  { href: '/items/new', label: 'Post' },
+  { href: '/requests', label: 'Requests' },
+  { href: '/chat', label: 'Chat' },
+  { href: '/profile', label: 'Profile' },
+  { href: '/auth', label: 'Login' },
+]
+
 export default function Navbar() {
-    return (
-      <header className="w-full bg-primary text-white flex items-center justify-between px-6 py-4">
-        <h1 className="text-xl font-bold">Thrifty</h1>
-        <div className="space-x-4">
-          <a href="/items" className="hover:text-accent">Browse</a>
-          <a href="/items/new" className="hover:text-accent">Post</a>
-          <a href="/profile" className="hover:text-accent">Profile</a>
-        </div>
-      </header>
-    )
-  }
-  
+  return (
+    <nav className="w-full bg-white border-b border-subtext text-primary px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+      <Link href="/" className="text-2xl font-bold italic text-primary">
+        Thriftee
+      </Link>
+      <div className="flex gap-4 text-sm font-medium">
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="text-subtext hover:text-accent transition"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  )
+}

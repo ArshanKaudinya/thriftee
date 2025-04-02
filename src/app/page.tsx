@@ -1,9 +1,19 @@
 export default function HomePage() {
   return (
-    <div className="text-center space-y-6">
-      <h2 className="text-3xl font-bold">Welcome to Thriftee</h2>
-      <p className="text-subtext">Buy, sell, and request items in your local community</p>
-      <a href="/items" className="inline-block bg-accent text-white px-4 py-2 rounded-xl mt-4">Browse Items</a>
+    <div className="flex flex-col items-center justify-center text-center px-4 py-16 space-y-8">
+      <h1 className="text-4xl font-bold text-primary italic">Welcome to Thriftee</h1>
+      <p className="text-subtext max-w-xl">
+        Thriftee is your community-driven marketplace for posting, requesting, and chatting about second-hand items.
+      </p>
+
+      <ul className="space-y-3 text-left max-w-md w-full text-accent font-medium">
+        <li><a href="/items" className="hover:underline">→ Browse all posted items</a></li>
+        <li><a href="/items/new" className="hover:underline">→ Post something to sell</a></li>
+        <li><a href="/requests" className="hover:underline">→ Request an item you need</a></li>
+        <li><a href="/chat" className="hover:underline">→ Go to chat</a></li>
+        <li><a href="/profile" className="hover:underline">→ View your profile</a></li>
+        <li><a href="/auth" className="hover:underline">→ Login / Signup</a></li>
+      </ul>
     </div>
   )
 }
