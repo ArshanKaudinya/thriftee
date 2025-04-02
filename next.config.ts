@@ -1,7 +1,10 @@
-import type { NextConfig } from "next";
+const SUPABASE_DOMAIN = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: [SUPABASE_DOMAIN],
+  }
+}
 
-export default nextConfig;
+export default nextConfig

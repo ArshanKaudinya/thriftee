@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation'
 import { LogOut, UserCircle, UploadCloud } from 'lucide-react'
 import Image from 'next/image'
 
+import { User } from '@supabase/supabase-js'
+
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [name, setName] = useState('')
   const [city, setCity] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -71,7 +73,6 @@ export default function ProfilePage() {
 
     if (tempAvatar && user?.id) {
       const fileExt = tempAvatar.name.split('.').pop()
-      const fileName = `${user.id}.${fileExt}`
       const filePath = `${user.id}/avatar.${fileExt}`
 
       const { error: uploadError } = await supabase.storage
@@ -98,11 +99,15 @@ export default function ProfilePage() {
       avatar_url: finalAvatarUrl || null
     }
 
+    if (!user) {
+      setError('User not found')
+      return
+    }
     const { error: updateError } = await supabase
       .from('users')
       .update(updates)
       .eq('id', user.id)
-
+    
     if (updateError) {
       console.error('Update error:', updateError.message)
       setError('Failed to update profile: ' + updateError.message)
@@ -133,7 +138,13 @@ export default function ProfilePage() {
 
         <div className="flex flex-col items-center gap-4 mb-6">
           {avatarUrl ? (
-            <img src={avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border border-subtext" />
+            <Image
+            src={avatarUrl}
+            alt="Avatar"
+            width={96}
+            height={96}
+            className="w-24 h-24 rounded-full object-cover border border-subtext"
+          />
           ) : (
             <UserCircle size={96} className="text-subtext" />
           )}

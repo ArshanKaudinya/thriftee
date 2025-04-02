@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -49,9 +49,13 @@ export default function AuthPage() {
 
         router.push('/profile')
       }
-    } catch (err: any) {
-      setError(err.message)
-    }
+    } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError('Something went wrong')
+        }
+      }      
     setLoading(false)
   }
 
@@ -118,7 +122,7 @@ export default function AuthPage() {
           </button>
         </div>
 
-        {error && <p className={`text-sm mt-2 text-center text-error`}>{error}</p>}
+        {error && <p className="text-sm mt-2 text-center text-error">{error}</p>}
 
         <button
           onClick={() => {
@@ -133,3 +137,4 @@ export default function AuthPage() {
     </div>
   )
 }
+
