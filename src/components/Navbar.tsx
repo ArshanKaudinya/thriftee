@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/items', label: 'Browse' },
+  { href: '/browse', label: 'Browse' },
   { href: '/items/new', label: 'Post' },
   { href: '/requests', label: 'Requests' },
   { href: '/chat', label: 'Chat' },
