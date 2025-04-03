@@ -1,11 +1,19 @@
 'use client'
-
 import { useEffect } from 'react'
-import { getLoadingAnimation } from '@/lib/loadingAnimation'
+
+let lottieCache: any = null
+
+export function getCachedLottie() {
+  return lottieCache
+}
 
 export default function LottiePreload() {
   useEffect(() => {
-    getLoadingAnimation()
+    if (!lottieCache) {
+      fetch('/assets/loading.json')
+        .then((res) => res.json())
+        .then((data) => { lottieCache = data })
+    }
   }, [])
 
   return null

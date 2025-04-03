@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { LogOut, UserCircle, ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import Lottie from 'react-lottie-player'
 
 export default function ItemDetailPage() {
   const searchParams = useSearchParams()
@@ -13,6 +14,18 @@ export default function ItemDetailPage() {
   const [currentImage, setCurrentImage] = useState(0)
   const [userSince, setUserSince] = useState('')
   const [createdAt, setCreatedAt] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [lottieData, setLottieData] = useState<any>(null)
+
+  useEffect(() => {
+    const loadLottie = async () => {
+      const res = await fetch('/assets/loading.json')
+      const data = await res.json()
+      setLottieData(data)
+    }
+
+    loadLottie()
+  }, [])
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -26,10 +39,13 @@ export default function ItemDetailPage() {
         if (userData?.date_joined) {
           const joined = new Date(userData.date_joined)
           const months = Math.floor((created.getTime() - joined.getTime()) / (1000 * 60 * 60 * 24 * 30))
-          setUserSince(months < 1 ? '<1 month' : `${months} month${months !== 1 ? 's' : ''}`)
+          if (months < 1) setUserSince('<1 month')
+          else setUserSince(`${months} month${months !== 1 ? 's' : ''}`)
         }
       }
+      setLoading(false)
     }
+
     if (itemId) fetchItem()
   }, [itemId])
 
@@ -53,7 +69,13 @@ export default function ItemDetailPage() {
     window.addEventListener('touchend', handleTouchEnd)
   }
 
-  if (!item) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (loading || !item || !lottieData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Lottie loop play animationData={lottieData} style={{ width: 100, height: 100 }} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen p-6 bg-background text-text">
@@ -90,7 +112,7 @@ export default function ItemDetailPage() {
             <h1 className="text-2xl font-bold text-primary mb-2">{item.name}</h1>
             <p className="text-lg text-slate-600 font-medium mb-1">₹{item.price}</p>
             <p className="text-sm text-subtext mt-4 mb-2">{item.locality ? `${item.locality}, ` : ''}{item.city}</p>
-            <p className="text-sm mt-6 mb-8">{item.description}</p>
+            <p className="text-sm mb-2">{item.description}</p>
             <div className="flex flex-col gap-2 text-sm text-subtext mt-6 mb-6">
               {item.quality_rating > 0 && <span>⭐ {item.quality_rating}/5</span>}
               {item.has_receipt && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Receipt</span>}
@@ -108,4 +130,5 @@ export default function ItemDetailPage() {
     </div>
   )
 }
+
 

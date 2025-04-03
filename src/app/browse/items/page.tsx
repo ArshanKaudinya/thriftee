@@ -46,16 +46,34 @@ export default function BrowsePage() {
     )
   })
 
+  const clearFilters = () => {
+    setMinPrice(0)
+    setMaxPrice(50000)
+    setMinQuality(0)
+    setCity('')
+    setHasReceipt(false)
+    setHasDelivery(false)
+    setIsVerified(false)
+  }
+
   return (
     <div className="min-h-screen p-6 bg-background text-text">
       <div className="sticky top-16 bg-background z-10 pb-5 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-primary">Browse Items</h1>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="px-4 py-2 rounded-xl bg-slate-400 text-slate-800 text-sm font-medium hover:opacity-90"
-        >
-          {showFilters ? 'Hide Filters' : 'Show Filters'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 rounded-xl bg-slate-100 text-slate-800 text-sm font-medium hover:opacity-90 border border-subtext"
+          >
+            Clear Filters
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="px-4 py-2 rounded-xl bg-slate-400 text-slate-800 text-sm font-medium hover:opacity-90"
+          >
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+        </div>
       </div>
 
       {showFilters && (
@@ -123,7 +141,7 @@ export default function BrowsePage() {
             <div
               key={item.id}
               onClick={() => router.push(`/items?id=${item.id}`)}
-              className="cursor-pointer border rounded-xl p-4 bg-white shadow flex flex-col justify-between"
+              className="cursor-pointer border rounded-xl p-4 bg-white shadow hover:bg-slate-50 transition-colors flex flex-col justify-between"
             >
               {item.images?.[0] ? (
                 <img src={item.images[0]} alt={item.name} className="w-full aspect-video object-cover rounded mb-2" />
@@ -149,5 +167,4 @@ export default function BrowsePage() {
     </div>
   )
 }
-
 

@@ -9,7 +9,7 @@ export default function HomePage() {
       <ul className="space-y-3 text-left max-w-md w-full text-accent font-medium">
         <li><a href="/browse" className="hover:underline">→ Browse all posted items</a></li>
         <li><a href="/items/new" className="hover:underline">→ Post something to sell</a></li>
-        <li><a href="/requests" className="hover:underline">→ Request an item you need</a></li>
+        <li><a href="/items/request" className="hover:underline">→ Request an item you need</a></li>
         <li><a href="/chat" className="hover:underline">→ Go to chat</a></li>
         <li><a href="/profile" className="hover:underline">→ View your profile</a></li>
         <li><a href="/auth" className="hover:underline">→ Login / Signup</a></li>
