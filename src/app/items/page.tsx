@@ -5,7 +5,11 @@ import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
-import Lottie from 'react-lottie-player'
+import dynamic from 'next/dynamic'
+
+const LottiePlayer = dynamic(() => import('react-lottie-player'), {
+  ssr: false
+})
 
 interface Item {
   id: string
@@ -66,11 +70,15 @@ function ItemDetailContent() {
   }, [itemId])
 
   const handlePrev = () => {
-    setCurrentImage((prev) => (item?.images?.length ? (prev - 1 + item.images.length) % item.images.length : 0))
+    setCurrentImage((prev) =>
+      item?.images?.length ? (prev - 1 + item.images.length) % item.images.length : 0
+    )
   }
 
   const handleNext = () => {
-    setCurrentImage((prev) => (item?.images?.length ? (prev + 1) % item.images.length : 0))
+    setCurrentImage((prev) =>
+      item?.images?.length ? (prev + 1) % item.images.length : 0
+    )
   }
 
   const handleSwipe = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -88,7 +96,14 @@ function ItemDetailContent() {
   if (loading || !item || !lottieData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        {lottieData && <Lottie loop play animationData={lottieData} style={{ width: 100, height: 100 }} />}
+        {lottieData && (
+          <LottiePlayer
+            loop
+            play
+            animationData={lottieData}
+            style={{ width: 100, height: 100 }}
+          />
+        )}
       </div>
     )
   }
@@ -102,18 +117,31 @@ function ItemDetailContent() {
         >
           {item.images.length > 0 && (
             <>
-              <Image src={item.images[currentImage]} alt="Item" fill className="object-cover rounded-xl" />
-              <button onClick={handlePrev} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow">
+              <Image
+                src={item.images[currentImage]}
+                alt="Item"
+                fill
+                className="object-cover rounded-xl"
+              />
+              <button
+                onClick={handlePrev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
+              >
                 <ArrowLeft size={18} />
               </button>
-              <button onClick={handleNext} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow">
+              <button
+                onClick={handleNext}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
+              >
                 <ArrowRight size={18} />
               </button>
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
                 {item.images.map((_, index) => (
                   <span
                     key={index}
-                    className={`w-2 h-2 rounded-full ${index === currentImage ? 'bg-primary' : 'bg-gray-400'} transition-all`}
+                    className={`w-2 h-2 rounded-full ${
+                      index === currentImage ? 'bg-primary' : 'bg-gray-400'
+                    } transition-all`}
                   />
                 ))}
               </div>
@@ -132,9 +160,21 @@ function ItemDetailContent() {
             <p className="text-sm mb-2">{item.description}</p>
             <div className="flex flex-col gap-2 text-sm text-subtext mt-6 mb-6">
               {item.quality_rating > 0 && <span>⭐ {item.quality_rating}/5</span>}
-              {item.has_receipt && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Receipt</span>}
-              {item.has_delivery && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Delivery</span>}
-              {item.is_verified && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Verified Poster</span>}
+              {item.has_receipt && (
+                <span className="flex items-center gap-1">
+                  <Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Receipt
+                </span>
+              )}
+              {item.has_delivery && (
+                <span className="flex items-center gap-1">
+                  <Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Delivery
+                </span>
+              )}
+              {item.is_verified && (
+                <span className="flex items-center gap-1">
+                  <Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Verified Poster
+                </span>
+              )}
             </div>
             <p className="text-sm text-subtext mb-2">Posted on: {createdAt}</p>
             {userSince && <p className="text-sm text-subtext mb-2">Seller since: {userSince}</p>}
@@ -155,6 +195,7 @@ export default function ItemDetailPage() {
     </Suspense>
   )
 }
+
 
 
 
