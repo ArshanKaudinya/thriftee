@@ -4,7 +4,7 @@ import Lottie from 'react-lottie-player'
 import { getCachedLottie } from './LottiePreload'
 
 export default function LoadingAnimation() {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<Record<string, unknown> | null>(null)
 
   useEffect(() => {
     const cached = getCachedLottie()

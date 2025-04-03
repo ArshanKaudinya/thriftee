@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
 import { UploadCloud, Star } from 'lucide-react'
-import Loading from '@/components/Loading'
+import Image from 'next/image'
+
 
 
 export default function NewItemPage() {
@@ -110,7 +111,7 @@ export default function NewItemPage() {
       {success && (
         <div className="absolute top-6 right-6 bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded-xl animate-fade-out shadow">
           <div className="flex items-center gap-2">
-            <img src="/assets/check.svg" alt="check" className="w-5 h-5" />
+            <Image src="/assets/check.svg" alt="Check" width={20} height={20} />
             <span>Item posted successfully!</span>
           </div>
         </div>

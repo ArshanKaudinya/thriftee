@@ -1,20 +1,53 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { LogOut, UploadCloud, UserCircle, CheckCircle2, Trash2 } from 'lucide-react'
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [activeTab, setActiveTab] = useState<'settings' | 'items' | 'requests'>('settings')
   const [name, setName] = useState('')
   const [city, setCity] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState<string>('')
   const [tempAvatar, setTempAvatar] = useState<File | null>(null)
-  const [myItems, setMyItems] = useState<any[]>([])
-  const [myRequests, setMyRequests] = useState<any[]>([])
+  interface Item {
+    id: string
+    name: string
+    price: number
+    city: string
+    locality?: string
+    description: string
+    quality_rating: number
+    has_receipt: boolean
+    has_delivery: boolean
+    is_verified: boolean
+    is_sold: boolean
+    user_id: string
+    created_at: string
+    images: string[]
+  }
+  
+
+  const [myItems, setMyItems] = useState<Item[]>([])
+  interface Request {
+    id: string
+    title: string
+    description: string
+    budget: number
+    city: string
+    locality?: string
+    quality_min: number
+    delivery_needed: boolean
+    user_id: string
+    created_at: string
+  }
+  
+
+  const [myRequests, setMyRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -22,7 +55,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchUserAndData = async () => {
-      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
       if (!currentUser) return router.push('/auth')
       setUser(currentUser)
 
@@ -40,7 +73,7 @@ export default function ProfilePage() {
       setLoading(false)
     }
     fetchUserAndData()
-  }, [])
+  }, [router])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -57,6 +90,10 @@ export default function ProfilePage() {
       const { data } = supabase.storage.from('avatars').getPublicUrl(path)
       finalAvatarUrl = data.publicUrl
       setAvatarUrl(finalAvatarUrl)
+    }
+    if (!user) {
+      setError('User is not logged in');
+      return;
     }
     const { error } = await supabase.from('users').update({ name, city, avatar_url: finalAvatarUrl }).eq('id', user.id)
     if (error) setError(error.message)

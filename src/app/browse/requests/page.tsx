@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Star } from 'lucide-react'
+import Image from 'next/image'
 
 export default function BrowseRequestsPage() {
   const [minBudget, setMinBudget] = useState(0)
@@ -10,14 +11,15 @@ export default function BrowseRequestsPage() {
   const [minQuality, setMinQuality] = useState(0)
   const [city, setCity] = useState('')
   const [needsDelivery, setNeedsDelivery] = useState(false)
-  const [requests, setRequests] = useState<any[]>([])
+  interface Request { id: string; title: string; description?: string; budget: number; city: string; locality?: string; min_quality: number; needs_delivery?: boolean; created_at?: string }
+  const [requests, setRequests] = useState<Request[]>([])
   const [showFilters, setShowFilters] = useState(false)
 
   const cities = ['Delhi', 'Mumbai', 'Bangalore']
 
   useEffect(() => {
     const fetchRequests = async () => {
-      const { data, error } = await supabase.from('requests').select('*')
+      const { data } = await supabase.from('requests').select('*')
       if (data) setRequests(data)
     }
     fetchRequests()
@@ -33,11 +35,11 @@ export default function BrowseRequestsPage() {
 
   const filteredRequests = requests.filter((req) => {
     return (
-      parseInt(req.budget) >= minBudget &&
-      parseInt(req.budget) <= maxBudget &&
-      req.quality_min >= minQuality &&
+      req.budget >= minBudget &&
+      req.budget <= maxBudget &&
+      req.min_quality >= minQuality &&
       (city ? req.city === city : true) &&
-      (!needsDelivery || req.delivery_needed)
+      (!needsDelivery || req.needs_delivery)
     )
   })
 
@@ -141,15 +143,15 @@ export default function BrowseRequestsPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  {[...Array(req.quality_min)].map((_, i) => (
+                  {[...Array(req.min_quality)].map((_, i) => (
                     <Star key={i} size={14} className="fill-yellow-500 text-yellow-500" />
                   ))}
                   <span className="ml-1">Minimum Quality</span>
                 </div>
-                {req.delivery_needed && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <img src="/assets/check.svg" alt="check" className="w-4 h-4" /> Needs Delivery
-                  </div>
+                {req.needs_delivery && (               
+                <div className="flex items-center gap-1 text-xs">
+                <Image src="/assets/check.svg" alt="check" width={16} height={16} /> Needs Delivery
+                </div>
                 )}
               </div>
             </div>

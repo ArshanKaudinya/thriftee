@@ -15,7 +15,8 @@ export default function BrowsePage() {
   const [hasReceipt, setHasReceipt] = useState(false)
   const [hasDelivery, setHasDelivery] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
-  const [items, setItems] = useState<any[]>([])
+  interface Item { id: string; name: string; price: number; city: string; images: string[]; has_receipt?: boolean; has_delivery?: boolean; is_verified?: boolean; is_sold?: boolean; quality_rating: number }
+  const [items, setItems] = useState<Item[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const router = useRouter()
 
@@ -23,7 +24,7 @@ export default function BrowsePage() {
 
   useEffect(() => {
     const fetchItems = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('items')
         .select('*')
         .eq('is_sold', false)
@@ -143,8 +144,8 @@ export default function BrowsePage() {
               onClick={() => router.push(`/items?id=${item.id}`)}
               className="cursor-pointer border rounded-xl p-4 bg-white shadow hover:bg-slate-50 transition-colors flex flex-col justify-between"
             >
-              {item.images?.[0] ? (
-                <img src={item.images[0]} alt={item.name} className="w-full aspect-video object-cover rounded mb-2" />
+              {item.images[0] ? (
+                <Image src={item.images[0]} alt={item.name} width={500} height={300} className="w-full aspect-video object-cover rounded mb-2" />
               ) : (
                 <div className="w-full aspect-video bg-gray-100 rounded mb-2" />
               )}
