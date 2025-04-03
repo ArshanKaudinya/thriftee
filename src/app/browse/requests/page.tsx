@@ -11,7 +11,19 @@ export default function BrowseRequestsPage() {
   const [minQuality, setMinQuality] = useState(0)
   const [city, setCity] = useState('')
   const [needsDelivery, setNeedsDelivery] = useState(false)
-  interface Request { id: string; title: string; description?: string; budget: number; city: string; locality?: string; min_quality: number; needs_delivery?: boolean; created_at?: string }
+
+  interface Request {
+    id: string
+    title: string
+    description?: string
+    budget: number
+    city: string
+    locality?: string
+    quality_min: number // changed to match DB column
+    delivery_needed?: boolean // changed to match DB column
+    created_at?: string
+  }
+
   const [requests, setRequests] = useState<Request[]>([])
   const [showFilters, setShowFilters] = useState(false)
 
@@ -37,9 +49,9 @@ export default function BrowseRequestsPage() {
     return (
       req.budget >= minBudget &&
       req.budget <= maxBudget &&
-      req.min_quality >= minQuality &&
+      req.quality_min >= minQuality &&
       (city ? req.city === city : true) &&
-      (!needsDelivery || req.needs_delivery)
+      (!needsDelivery || req.delivery_needed)
     )
   })
 
@@ -99,7 +111,9 @@ export default function BrowseRequestsPage() {
                     key={star}
                     size={18}
                     onClick={() => setMinQuality(star)}
-                    className={`cursor-pointer ${star <= minQuality ? 'fill-yellow-500 text-yellow-500' : 'text-subtext'}`}
+                    className={`cursor-pointer ${
+                      star <= minQuality ? 'fill-yellow-500 text-yellow-500' : 'text-subtext'
+                    }`}
                   />
                 ))}
               </div>
@@ -113,12 +127,19 @@ export default function BrowseRequestsPage() {
               >
                 <option value="">Select City</option>
                 {cities.map((city) => (
-                  <option key={city} value={city}>{city}</option>
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
                 ))}
               </select>
             </div>
             <label className="text-sm font-medium flex items-center gap-2">
-              <input type="checkbox" checked={needsDelivery} onChange={() => setNeedsDelivery(!needsDelivery)} /> Delivery Needed
+              <input
+                type="checkbox"
+                checked={needsDelivery}
+                onChange={() => setNeedsDelivery(!needsDelivery)}
+              />{' '}
+              Delivery Needed
             </label>
           </div>
         </div>
@@ -139,19 +160,23 @@ export default function BrowseRequestsPage() {
             <div className="mt-auto pt-2 flex flex-col gap-2 text-sm text-subtext">
               <div className="flex justify-between">
                 <span>Budget: ₹{req.budget}</span>
-                <span>City: {req.locality ? `${req.locality}, ` : ''}{req.city}</span>
+                <span>
+                  City: {req.locality ? `${req.locality}, ` : ''}
+                  {req.city}
+                </span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  {[...Array(req.min_quality)].map((_, i) => (
+                  {[...Array(req.quality_min)].map((_, i) => (
                     <Star key={i} size={14} className="fill-yellow-500 text-yellow-500" />
                   ))}
                   <span className="ml-1">Minimum Quality</span>
                 </div>
-                {req.needs_delivery && (               
-                <div className="flex items-center gap-1 text-xs">
-                <Image src="/assets/check.svg" alt="check" width={16} height={16} /> Needs Delivery
-                </div>
+                {req.delivery_needed && (
+                  <div className="flex items-center gap-1 text-xs">
+                    <Image src="/assets/check.svg" alt="check" width={16} height={16} /> Needs
+                    Delivery
+                  </div>
                 )}
               </div>
             </div>
@@ -161,6 +186,7 @@ export default function BrowseRequestsPage() {
     </div>
   )
 }
+
 
 
 

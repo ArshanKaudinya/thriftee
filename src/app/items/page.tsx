@@ -111,43 +111,44 @@ function ItemDetailContent() {
   return (
     <div className="min-h-screen p-6 bg-background text-text">
       <div className="max-w-5xl mx-auto bg-surface border border-subtext rounded-xl shadow p-6 flex flex-col md:flex-row gap-6">
-        <div
-          className="relative w-full md:w-1/2 aspect-video md:aspect-square overflow-hidden"
-          onTouchStart={handleSwipe}
-        >
-          {item.images.length > 0 && (
-            <>
-              <Image
-                src={item.images[currentImage]}
-                alt="Item"
-                fill
-                className="object-cover rounded-xl"
-              />
-              <button
-                onClick={handlePrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
-              >
-                <ArrowLeft size={18} />
-              </button>
-              <button
-                onClick={handleNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
-              >
-                <ArrowRight size={18} />
-              </button>
-              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
-                {item.images.map((_, index) => (
-                  <span
-                    key={index}
-                    className={`w-2 h-2 rounded-full ${
-                      index === currentImage ? 'bg-primary' : 'bg-gray-400'
-                    } transition-all`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+      <div
+        className="relative w-full md:w-1/2 aspect-square overflow-hidden"
+        onTouchStart={handleSwipe}
+      >
+        {item.images.length > 0 && (
+          <>
+            <Image
+              src={item.images[currentImage]}
+              alt="Item"
+              fill
+              className="object-contain rounded-xl" 
+            />
+            <button
+              onClick={handlePrev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <button
+              onClick={handleNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow"
+            >
+              <ArrowRight size={18} />
+            </button>
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {item.images.map((_, index) => (
+                <span
+                  key={index}
+                  className={`w-2 h-2 rounded-full ${
+                    index === currentImage ? 'bg-primary' : 'bg-gray-400'
+                  } transition-all`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
 
         <div className="w-full md:w-1/2 flex flex-col justify-between">
           <div>

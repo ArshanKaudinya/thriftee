@@ -22,7 +22,15 @@ export default function RequestPage() {
     setSuccess('')
     setLoading(true)
 
-    console.log('Form values:', { title, description, budget, city, locality, minQuality, needsDelivery })
+    console.log('Form values:', {
+      title,
+      description,
+      budget,
+      city,
+      locality,
+      minQuality,
+      needsDelivery
+    })
 
     if (!title || !budget || !city) {
       setError('Please fill all required fields')
@@ -84,28 +92,53 @@ export default function RequestPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen p-6 bg-background text-text">
-      <div className="bg-surface border border-subtext rounded-xl shadow-md p-8 max-w-lg w-full">
+      <div className="bg-surface border border-subtext rounded-xl shadow-md p-8 max-w-lg w-full relative">
         <h1 className="text-2xl font-bold text-primary mb-6 text-center">Post a Request</h1>
 
         <div className="flex flex-col gap-4">
           <label className="flex flex-col">
-            <span>Title<span className="text-red-500"> *</span></span>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            <span>
+              Title<span className="text-red-500"> *</span>
+            </span>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-subtext bg-background text-text"
+            />
           </label>
 
           <label className="flex flex-col">
             <span>Description</span>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-subtext bg-background text-text"
+            />
           </label>
 
           <label className="flex flex-col">
-            <span>Budget (₹)<span className="text-red-500"> *</span></span>
-            <input type="number" value={budget} onChange={(e) => setBudget(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            <span>
+              Budget (₹)
+              <span className="text-red-500"> *</span>
+            </span>
+            <input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-subtext bg-background text-text"
+            />
           </label>
 
           <label className="flex flex-col">
-            <span>City<span className="text-red-500"> *</span></span>
-            <select value={city} onChange={(e) => setCity(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text">
+            <span>
+              City<span className="text-red-500"> *</span>
+            </span>
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-subtext bg-background text-text"
+            >
               <option value="">Select City</option>
               <option value="Delhi">Delhi</option>
               <option value="Mumbai">Mumbai</option>
@@ -115,7 +148,12 @@ export default function RequestPage() {
 
           <label className="flex flex-col">
             <span>Locality</span>
-            <input type="text" value={locality} onChange={(e) => setLocality(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            <input
+              type="text"
+              value={locality}
+              onChange={(e) => setLocality(e.target.value)}
+              className="px-4 py-2 rounded-xl border border-subtext bg-background text-text"
+            />
           </label>
 
           <div className="flex flex-col">
@@ -126,14 +164,21 @@ export default function RequestPage() {
                   key={star}
                   size={20}
                   onClick={() => setMinQuality(star)}
-                  className={`cursor-pointer ${star <= minQuality ? 'fill-yellow-500 text-yellow-500' : 'text-subtext'}`}
+                  className={`cursor-pointer ${
+                    star <= minQuality ? 'fill-yellow-500 text-yellow-500' : 'text-subtext'
+                  }`}
                 />
               ))}
             </div>
           </div>
 
           <label className="flex items-center gap-2">
-            <input type="checkbox" checked={needsDelivery} onChange={() => setNeedsDelivery(!needsDelivery)} /> Delivery Needed
+            <input
+              type="checkbox"
+              checked={needsDelivery}
+              onChange={() => setNeedsDelivery(!needsDelivery)}
+            />
+            Delivery Needed
           </label>
 
           <button
@@ -145,17 +190,21 @@ export default function RequestPage() {
           </button>
 
           {error && <p className="text-error mt-2 text-sm text-center">{error}</p>}
-          {success && (
-            <div className="absolute top-6 right-6 bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded-xl animate-fade-out shadow">
-                <div className="flex items-center gap-2">
-                <Image src="/assets/check.svg" alt="Check" width={20} height={20} />
-                </div>
-            </div>
-            )}
-
         </div>
+
+        {success && (
+        <div className="fixed top-12 right-1 bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded-xl animate-fade-out shadow z-50">
+            <div className="flex items-center gap-2">
+            <Image src="/assets/check.svg" alt="Check" width={20} height={20} />
+            <span>{success}</span>
+            </div>
+        </div>
+        )}
+
       </div>
     </div>
   )
 }
+
+
 
