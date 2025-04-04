@@ -1,49 +1,54 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import InfiniteScroll from 'react-infinite-scroll-component'
 import { supabase } from '@/lib/supabase'
 import { Star } from 'lucide-react'
 import Image from 'next/image'
+import { ClipLoader } from 'react-spinners'
 
-export default function BrowseRequestsPage() {
+const queryClient = new QueryClient()
+
+interface Request {
+  id: string
+  title: string
+  description?: string
+  budget: number
+  city: string
+  locality?: string
+  quality_min: number
+  delivery_needed?: boolean
+  created_at?: string
+}
+
+function BrowseRequestsContent() {
   const [minBudget, setMinBudget] = useState(0)
   const [maxBudget, setMaxBudget] = useState(50000)
   const [minQuality, setMinQuality] = useState(0)
   const [city, setCity] = useState('')
   const [needsDelivery, setNeedsDelivery] = useState(false)
-
-  interface Request {
-    id: string
-    title: string
-    description?: string
-    budget: number
-    city: string
-    locality?: string
-    quality_min: number // changed to match DB column
-    delivery_needed?: boolean // changed to match DB column
-    created_at?: string
-  }
-
-  const [requests, setRequests] = useState<Request[]>([])
   const [showFilters, setShowFilters] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(6)
 
-  const cities = ['Delhi', 'Mumbai', 'Bangalore']
+  const cities = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+    'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim',
+    'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand',
+    'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh',
+    'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir',
+    'Ladakh', 'Lakshadweep', 'Puducherry'
+  ]
 
-  useEffect(() => {
-    const fetchRequests = async () => {
+  const { data: requests = [], isLoading } = useQuery<Request[]>({
+    queryKey: ['requests'],
+    queryFn: async () => {
       const { data } = await supabase.from('requests').select('*')
-      if (data) setRequests(data)
-    }
-    fetchRequests()
-  }, [])
-
-  const clearFilters = () => {
-    setMinBudget(0)
-    setMaxBudget(50000)
-    setMinQuality(0)
-    setCity('')
-    setNeedsDelivery(false)
-  }
+      return data || []
+    },
+  })
 
   const filteredRequests = requests.filter((req) => {
     return (
@@ -54,6 +59,18 @@ export default function BrowseRequestsPage() {
       (!needsDelivery || req.delivery_needed)
     )
   })
+
+  const clearFilters = () => {
+    setMinBudget(0)
+    setMaxBudget(50000)
+    setMinQuality(0)
+    setCity('')
+    setNeedsDelivery(false)
+  }
+
+  const loadMore = () => {
+    setVisibleCount((prev) => prev + 6)
+  }
 
   return (
     <div className="min-h-screen p-6 bg-background text-text">
@@ -145,45 +162,65 @@ export default function BrowseRequestsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {filteredRequests.map((req) => (
-          <div
-            key={req.id}
-            className="border rounded-xl p-4 bg-white shadow flex flex-col justify-between min-h-[200px]"
-          >
-            <div className="text-lg font-semibold truncate mb-1">{req.title}</div>
-            {req.description && (
-              <div className="text-sm text-text mb-4 max-h-32 overflow-hidden text-ellipsis">
-                {req.description}
-              </div>
-            )}
-            <div className="mt-auto pt-2 flex flex-col gap-2 text-sm text-subtext">
-              <div className="flex justify-between">
-                <span>Budget: ₹{req.budget}</span>
-                <span>
-                  City: {req.locality ? `${req.locality}, ` : ''}
-                  {req.city}
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  {[...Array(req.quality_min)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-yellow-500 text-yellow-500" />
-                  ))}
-                  <span className="ml-1">Minimum Quality</span>
-                </div>
-                {req.delivery_needed && (
-                  <div className="flex items-center gap-1 text-xs">
-                    <Image src="/assets/check.svg" alt="check" width={16} height={16} /> Needs
-                    Delivery
+      {isLoading ? (
+        <div className="flex justify-center py-10">
+          <ClipLoader color="#64748b" size={40} />
+        </div>
+      ) : (
+        <InfiniteScroll
+          dataLength={visibleCount}
+          next={loadMore}
+          hasMore={visibleCount < filteredRequests.length}
+          loader={<p className="text-center text-sm text-subtext">Loading more requests...</p>}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {filteredRequests.slice(0, visibleCount).map((req) => (
+              <div
+                key={req.id}
+                className="border rounded-xl p-4 bg-white shadow flex flex-col justify-between min-h-[200px]"
+              >
+                <div className="text-lg font-semibold truncate mb-1">{req.title}</div>
+                {req.description && (
+                  <div className="text-sm text-text mb-4 max-h-32 overflow-hidden text-ellipsis">
+                    {req.description}
                   </div>
                 )}
+                <div className="mt-auto pt-2 flex flex-col gap-2 text-sm text-subtext">
+                  <div className="flex justify-between">
+                    <span>Budget: ₹{req.budget}</span>
+                    <span>
+                      City: {req.locality ? `${req.locality}, ` : ''}
+                      {req.city}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      {[...Array(req.quality_min)].map((_, i) => (
+                        <Star key={i} size={14} className="fill-yellow-500 text-yellow-500" />
+                      ))}
+                      <span className="ml-1">Minimum Quality</span>
+                    </div>
+                    {req.delivery_needed && (
+                      <div className="flex items-center gap-1 text-xs">
+                        <Image src="/assets/check.svg" alt="check" width={16} height={16} /> Needs Delivery
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </InfiniteScroll>
+      )}
     </div>
+  )
+}
+
+export default function BrowseRequestsPage() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowseRequestsContent />
+    </QueryClientProvider>
   )
 }
 
