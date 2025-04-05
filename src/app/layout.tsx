@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           offset={24}
         />
         <Analytics />
-        <main className="min-h-screen bg-background text-text">
+        <main className="min-h-[92vh] bg-background text-text">
           {children}
         </main>
       </body>

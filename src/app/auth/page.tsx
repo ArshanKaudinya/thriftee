@@ -28,19 +28,21 @@ export default function AuthPage() {
     setError('')
     try {
       if (mode === 'signup') {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password
         })
 
         if (signUpError) throw signUpError
 
-        if (data.user) {
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
           await supabase.from('users').upsert({
-            id: data.user.id,
-            email,
-            name,
-            city,
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.name || 'User',
+            city: '',
             date_joined: new Date().toISOString()
           })
         }

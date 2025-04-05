@@ -57,14 +57,20 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchUserAndData = async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
-      if (!currentUser) return router.push('/auth')
+      const { data: { user: currentUser }, error } = await supabase.auth.getUser()
+      if (error || !currentUser) return router.push('/auth')
       setUser(currentUser)
 
-      const { data: profileData } = await supabase.from('users').select('*').eq('id', currentUser.id).maybeSingle()
-      setName(profileData?.name || '')
-      setCity(profileData?.city || '')
-      setAvatarUrl(profileData?.avatar_url || '')
+      const { data: profileData, error: profileError } = await supabase.from('users').select('name, city, avatar_url').eq('id', currentUser.id).maybeSingle()
+      if (profileError) toast.error('Failed to fetch profile data')
+      if (profileData) {
+        console.log('[DEBUG] Name from DB:', profileData.name)
+        console.log('[DEBUG] City from DB:', profileData.city)
+        console.log('[DEBUG] Avatar URL from DB:', profileData.avatar_url)
+        setName(profileData.name || '')
+        setCity(profileData.city || '')
+        setAvatarUrl(profileData.avatar_url || '')
+      }
 
       const { data: itemsData } = await supabase.from('items').select('*').eq('user_id', currentUser.id)
       setMyItems(itemsData || [])
@@ -83,8 +89,10 @@ export default function ProfilePage() {
   }
 
   const handleUpdate = async () => {
+    if (!user) return toast.error('User is not logged in')
+
     let finalAvatarUrl = avatarUrl
-    if (tempAvatar && user?.id) {
+    if (tempAvatar) {
       const fileExt = tempAvatar.name.split('.').pop()
       const path = `${user.id}/avatar.${fileExt}`
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, tempAvatar, { upsert: true })
@@ -92,10 +100,11 @@ export default function ProfilePage() {
       const { data } = supabase.storage.from('avatars').getPublicUrl(path)
       finalAvatarUrl = data.publicUrl
       setAvatarUrl(finalAvatarUrl)
+      console.log('[DEBUG] Avatar uploaded URL:', finalAvatarUrl)
     }
-    if (!user) return toast.error('User is not logged in')
 
-    const { error } = await supabase.from('users').update({ name, city, avatar_url: finalAvatarUrl }).eq('id', user.id)
+    console.log('[DEBUG] Saving profile with:', { name, city, avatarUrl: finalAvatarUrl })
+    const { error } = await supabase.from('users').upsert({ id: user.id, name, city, avatar_url: finalAvatarUrl })
     if (error) toast.error(error.message)
     else toast.success('Profile updated successfully!')
   }
@@ -138,16 +147,23 @@ export default function ProfilePage() {
           <div className="bg-surface border border-subtext p-6 rounded-xl shadow">
             <h2 className="text-xl font-bold mb-4">Settings</h2>
             <div className="flex flex-col items-center gap-4">
-              {avatarUrl ? <Image src={avatarUrl} alt="Avatar" width={96} height={96} className="rounded-full border" /> : <UserCircle size={96} className="text-subtext" />}
+              {avatarUrl ? <Image src={avatarUrl} alt="Avatar" width={96} height={96} className="rounded-full border object-cover" /> : <UserCircle size={96} className="text-subtext" />}
               <label className="relative cursor-pointer bg-slate-100 text-sm font-medium px-4 py-2 rounded-xl border border-subtext">
                 <div className="flex items-center gap-2">
                   <UploadCloud size={16} /> Upload Avatar
                 </div>
-                <input type="file" accept="image/*" onChange={(e) => setTempAvatar(e.target.files?.[0] || null)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <input type="file" accept="image/*" onChange={(e) => {
+                  const file = e.target.files?.[0] || null
+                  setTempAvatar(file)
+                }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
               </label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" className="w-full px-4 py-2 rounded-xl border" />
-              <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" className="w-full px-4 py-2 rounded-xl border" />
-              <button onClick={handleUpdate} className="bg-slate-400 text-slate-800 rounded-xl px-6 py-2">Save Changes</button>
+              <input type="text" value={name} onChange={(e) => {
+                setName(e.target.value)
+              }} placeholder="Full Name" className="w-full max-w-sm px-4 py-2 rounded-xl border text-center" />
+              <input type="text" value={city} onChange={(e) => {
+                setCity(e.target.value)
+              }} placeholder="City" className="w-full max-w-sm px-4 py-2 rounded-xl border text-center" />
+              <button onClick={handleUpdate} className="bg-slate-400 text-slate-800 rounded-xl px-6 py-2 hover:opacity-90 transition">Save Changes</button>
             </div>
           </div>
         )}
@@ -155,7 +171,7 @@ export default function ProfilePage() {
         {activeTab === 'items' && (
           <InfiniteScroll
             dataLength={visibleItems}
-            next={() => setVisibleItems((prev) => prev + 6)}
+            next={() => setVisibleItems(prev => prev + 6)}
             hasMore={visibleItems < myItems.length}
             loader={<p className="text-center text-sm text-subtext py-4">Loading more items...</p>}
           >
@@ -178,7 +194,7 @@ export default function ProfilePage() {
         {activeTab === 'requests' && (
           <InfiniteScroll
             dataLength={visibleRequests}
-            next={() => setVisibleRequests((prev) => prev + 6)}
+            next={() => setVisibleRequests(prev => prev + 6)}
             hasMore={visibleRequests < myRequests.length}
             loader={<p className="text-center text-sm text-subtext py-4">Loading more requests...</p>}
           >
@@ -200,3 +216,5 @@ export default function ProfilePage() {
     </div>
   )
 }
+
+
