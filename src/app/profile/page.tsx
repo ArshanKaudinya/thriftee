@@ -89,25 +89,50 @@ export default function ProfilePage() {
   }
 
   const handleUpdate = async () => {
-    if (!user) return toast.error('User is not logged in')
-
+    if (!user) {
+      toast.error('User is not logged in')
+      return
+    }
+  
     let finalAvatarUrl = avatarUrl
+  
     if (tempAvatar) {
       const fileExt = tempAvatar.name.split('.').pop()
       const path = `${user.id}/avatar.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, tempAvatar, { upsert: true })
-      if (uploadError) return toast.error('Upload failed')
-      const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-      finalAvatarUrl = data.publicUrl
+      const { error: uploadError } = await supabase
+        .storage
+        .from('avatars')
+        .upload(path, tempAvatar, { upsert: true })
+  
+      if (uploadError) {
+        toast.error('Avatar upload failed')
+        console.error('uploadError', uploadError)
+        return
+      }
+  
+      const { data: urlData } = supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(path)
+  
+      finalAvatarUrl = urlData.publicUrl
       setAvatarUrl(finalAvatarUrl)
-      console.log('[DEBUG] Avatar uploaded URL:', finalAvatarUrl)
+      setTempAvatar(null)
     }
-
-    console.log('[DEBUG] Saving profile with:', { name, city, avatarUrl: finalAvatarUrl })
-    const { error } = await supabase.from('users').upsert({ id: user.id, name, city, avatar_url: finalAvatarUrl })
-    if (error) toast.error(error.message)
-    else toast.success('Profile updated successfully!')
+  
+    const { error } = await supabase
+      .from('users')
+      .update({ name, city, avatar_url: finalAvatarUrl })
+      .eq('id', user.id)
+  
+    if (error) {
+      toast.error(error.message)
+    } else {
+      toast.success('Profile updated successfully!')
+    }
   }
+  
+  
 
   const markAsSold = async (id: string) => {
     await supabase.from('items').update({ is_sold: true }).eq('id', id)

@@ -10,7 +10,6 @@ import { ClipLoader } from 'react-spinners'
 
 interface OtherUser {
   name: string
-  city: string
   avatar_url: string
 }
 
@@ -39,20 +38,36 @@ function InnerChatRoom() {
       if (!chatId) return
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       if (authError || !user) return
+
       const { data: chatData, error: chatError } = await supabase
         .from('chats')
         .select('*')
         .eq('id', chatId)
         .maybeSingle()
       if (chatError || !chatData) return
+
       const otherUserId = chatData.buyer_id === user.id ? chatData.seller_id : chatData.buyer_id
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('name, city, avatar_url')
-        .eq('id', otherUserId)
-        .maybeSingle()
-      if (userError || !userData) return
-      setOtherUser(userData)
+
+      console.log('[ChatRoom] fetching userinfo for uuid=', otherUserId)
+      const { data: userInfo, error: rpcError } = await supabase
+        .rpc('get_userinfo_by_id', { uid: otherUserId })
+      console.log('[ChatRoom] userinfo for uuid=', userInfo)
+
+      if (rpcError) {
+        console.error('RPC error:', rpcError)
+        return
+      }
+      if (!userInfo) {
+        console.error('No user returned')
+        return
+      }
+
+      const info = userInfo[0]
+      setOtherUser({
+        name: info.name,
+        avatar_url: info.avatar_url,
+      })
+      console.log('otherUser userinfo for uuid=', otherUser)
       setLoadingUser(false)
     }
     fetchOtherUser()
@@ -86,8 +101,9 @@ function InnerChatRoom() {
               <div className="w-10 h-10 bg-gray-300 rounded-full" />
             )}
             <div className="flex flex-col">
-              <span className="font-semibold">{otherUser?.name || 'User'}</span>
-              <span className="text-xs text-subtext">{otherUser?.city || 'Unknown City'}</span>
+              <span className="font-semibold">
+                {otherUser?.name || 'User'}
+              </span>
             </div>
           </>
         )}
@@ -105,6 +121,8 @@ function InnerChatRoom() {
     </div>
   )
 }
+
+
 
 
 

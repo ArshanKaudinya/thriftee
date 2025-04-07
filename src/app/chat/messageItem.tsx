@@ -17,12 +17,16 @@ export default function MessageItem({
 
   useEffect(() => {
     const fetchSender = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('name, avatar_url')
-        .eq('id', message.sender_id)
-        .maybeSingle()
-      if (!error && data) setSender(data)
+      console.log('[MessageItem] fetching userinfo for', message.sender_id)
+      const { data: userInfos, error } = await supabase
+        .rpc('get_userinfo_by_id', { uid: message.sender_id })
+      console.log('[MessageItem] rpc result:', { userInfos, error })
+      if (error) {
+        console.error('[MessageItem] RPC error fetching sender:', error)
+      } else if (userInfos && userInfos.length > 0) {
+        const info = userInfos[0]
+        setSender({ name: info.name, avatar_url: info.avatar_url })
+      }
     }
     fetchSender()
   }, [message.sender_id])
@@ -59,6 +63,7 @@ export default function MessageItem({
     </div>
   )
 }
+
 
 
 

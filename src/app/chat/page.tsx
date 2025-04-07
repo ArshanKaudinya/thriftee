@@ -3,33 +3,41 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import ChatList from './chatList'
-import { Toaster } from 'sonner'
 import { ClipLoader } from 'react-spinners'
+import { Toaster } from 'sonner'
+import ChatItem from './chatItem'
+import { ChatRoom } from './types'
 
 export default function ChatPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [chats, setChats] = useState<ChatRoom[]>([])
   const router = useRouter()
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data, error } = await supabase.auth.getUser()
-        if (error || !data.user) {
-          router.push('/auth')
-        } else {
-          setUserId(data.user.id)
-        }
-      } catch (err) {
-        console.error('Error fetching user:', err)
+    const fetchUserAndChats = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) {
         router.push('/auth')
-      } finally {
-        setLoading(false)
+        return
       }
+      setUserId(user.id)
+
+      const { data: chatData, error: chatError } = await supabase
+        .from('chats')
+        .select('*')
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+
+      if (chatError) {
+        console.error('Error fetching chats:', chatError)
+        return
+      }
+
+      setChats(chatData || [])
+      setLoading(false)
     }
 
-    fetchUser()
+    fetchUserAndChats()
   }, [router])
 
   if (loading) {
@@ -44,8 +52,13 @@ export default function ChatPage() {
     <div className="min-h-screen p-6 bg-background text-text">
       <Toaster richColors position="top-right" />
       <h1 className="text-2xl font-bold text-primary mb-6">Your Chats</h1>
-      {userId && <ChatList userId={userId} />}
+      <div className="flex flex-col gap-4">
+        {chats.map((chat) => (
+          <ChatItem key={chat.id} chat={chat} currentUserId={userId!} />
+        ))}
+      </div>
     </div>
   )
 }
+
 
