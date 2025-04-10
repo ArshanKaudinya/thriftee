@@ -32,7 +32,8 @@ function InnerChatRoom() {
   const chatId = searchParams.get('id')
   const [otherUser, setOtherUser] = useState<OtherUser | null>(null)
   const [loadingUser, setLoadingUser] = useState(true)
-
+  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const fetchOtherUser = async () => {
       if (!chatId) return

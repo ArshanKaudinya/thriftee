@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Slider } from '@/components/Slider'
@@ -9,7 +9,6 @@ import Image from 'next/image'
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { ClipLoader } from 'react-spinners'
-import { useUser } from '@/lib/UserContext'
 
 const queryClient = new QueryClient()
 
@@ -26,7 +25,7 @@ interface Item {
   quality_rating: number;
 }
 
-function BrowseContent() {
+function ItemSearchContent() {
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(50000)
   const [minQuality, setMinQuality] = useState(0)
@@ -39,7 +38,6 @@ function BrowseContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const query = searchParams.get('q')?.toLowerCase() || ''
-  const user = useUser()
 
   const cities = ['Delhi', 'Mumbai', 'Bangalore']
 
@@ -212,9 +210,10 @@ function BrowseContent() {
 export default function BrowsePage() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowseContent />
+      <Suspense fallback={<div className="text-center py-10 text-subtext">Loading...</div>}>
+        <ItemSearchContent />
+      </Suspense>
     </QueryClientProvider>
   )
 }
-
 

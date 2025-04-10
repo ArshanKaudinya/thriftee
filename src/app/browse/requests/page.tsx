@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Slider } from '@/components/Slider'
@@ -9,8 +9,6 @@ import Image from 'next/image'
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { ClipLoader } from 'react-spinners'
-import { useUser } from '@/lib/UserContext'
-import { toast } from 'sonner'
 
 const queryClient = new QueryClient()
 
@@ -30,7 +28,6 @@ interface Request {
 function BrowseRequestsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const user = useUser()
   const query = searchParams.get('q')?.toLowerCase() || ''
 
   const [minBudget, setMinBudget] = useState(0)
@@ -73,42 +70,24 @@ function BrowseRequestsContent() {
   const startChat = async (req: Request) => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) {
-        toast.error('Log in to chat')
-        return
-      }
-      if (req.user_id === user.id) {
-        toast.error("You can't chat with yourself")
-        return
-      }
-      const { data: existingChat, error: fetchError } = await supabase
+      if (userError || !user) return
+      if (req.user_id === user.id) return
+      const { data: existingChat } = await supabase
         .from('chats')
         .select('*')
         .eq('item_id', req.id)
         .eq('buyer_id', user.id)
         .eq('seller_id', req.user_id)
         .maybeSingle()
-      if (fetchError) throw fetchError
-      if (existingChat) {
-        router.push(`/chat/chatRoom?id=${existingChat.id}`)
-        return
-      }
-      const { data: newChat, error: insertError } = await supabase
+      if (existingChat) return router.push(`/chat/chatRoom?id=${existingChat.id}`)
+      const { data: newChat } = await supabase
         .from('chats')
-        .insert({
-          item_id: req.id,
-          seller_id: req.user_id,
-          buyer_id: user.id,
-          created_at: new Date().toISOString(),
-        })
+        .insert({ item_id: req.id, seller_id: req.user_id, buyer_id: user.id, created_at: new Date().toISOString() })
         .select()
         .maybeSingle()
-      if (insertError || !newChat) throw insertError
-      toast.success('Chat started')
-      router.push(`/chat/chatRoom?id=${newChat.id}`)
+      if (newChat) router.push(`/chat/chatRoom?id=${newChat.id}`)
     } catch (err) {
       console.error('[startChat] error:', err)
-      toast.error('Failed to start chat')
     }
   }
 
@@ -124,7 +103,7 @@ function BrowseRequestsContent() {
             Clear Filters
           </button>
           <button
-            onClick={() => setShowFilters((prev) => !prev)}
+            onClick={() => setShowFilters(prev => !prev)}
             className="px-4 py-2 rounded-xl bg-slate-400 text-slate-800 text-sm font-medium hover:opacity-90"
           >
             {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -250,10 +229,13 @@ function BrowseRequestsContent() {
 export default function BrowseRequestsPage() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowseRequestsContent />
+      <Suspense fallback={<div className="text-center py-10 text-subtext">Loading...</div>}>
+        <BrowseRequestsContent />
+      </Suspense>
     </QueryClientProvider>
   )
 }
+
 
 
 
