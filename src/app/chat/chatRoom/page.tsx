@@ -82,7 +82,7 @@ function InnerChatRoom() {
   }
 
   return (
-    <div className="flex flex-col h-[92vh] bg-background text-text">
+    <div className="flex flex-col h-[91vh] bg-background text-text">
       <div className="sticky top-0 z-10 p-4 shadow-sm bg-white flex items-center gap-3 border-b border-subtext">
         {loadingUser ? (
           <p className="text-sm text-subtext">Loading user info...</p>

@@ -155,7 +155,7 @@ export default function ProfilePage() {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
 
   return (
-    <div className="min-h-screen bg-background text-text p-6 flex gap-6">
+    <div className="min-h-[91vh] bg-background text-text p-6 flex gap-6">
       <div className="w-1/5 sticky top-6 h-fit border-r border-subtext pr-6 flex flex-col justify-between py-4">
         <div className="flex flex-col gap-3 pl-4">
           <button className={`text-left ${activeTab === 'settings' ? 'font-bold text-primary' : 'text-text'}`} onClick={() => setActiveTab('settings')}>Settings</button>

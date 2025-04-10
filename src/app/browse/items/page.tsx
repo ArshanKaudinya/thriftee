@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Slider } from '@/components/Slider'
 import { Star } from 'lucide-react'
@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { ClipLoader } from 'react-spinners'
-
+import { useUser } from '@/lib/UserContext'
 
 const queryClient = new QueryClient()
 
@@ -37,6 +37,9 @@ function BrowseContent() {
   const [visibleCount, setVisibleCount] = useState(6)
   const [showFilters, setShowFilters] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const query = searchParams.get('q')?.toLowerCase() || ''
+  const user = useUser()
 
   const cities = ['Delhi', 'Mumbai', 'Bangalore']
 
@@ -49,7 +52,12 @@ function BrowseContent() {
   })
 
   const filteredItems = items.filter((item) => {
+    const matchesSearch = query
+      ? item.name.toLowerCase().includes(query) || item.city.toLowerCase().includes(query)
+      : true
+
     return (
+      matchesSearch &&
       item.price >= minPrice &&
       item.price <= maxPrice &&
       item.quality_rating >= minQuality &&
@@ -151,6 +159,8 @@ function BrowseContent() {
         <div className="flex justify-center py-10">
           <ClipLoader color="#64748b" size={40} />
         </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="text-center text-subtext py-10 text-sm">No items match your filters or search.</div>
       ) : (
         <InfiniteScroll
           dataLength={visibleCount}
@@ -158,45 +168,44 @@ function BrowseContent() {
           hasMore={visibleCount < filteredItems.length}
           loader={<p className="text-center text-sm text-subtext">Loading more items...</p>}
         >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {filteredItems.slice(0, visibleCount).map((item) => {
+              const badges = [
+                item.has_receipt && 'Receipt',
+                item.has_delivery && 'Delivery',
+                item.is_verified && 'Verified'
+              ].filter(Boolean)
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {filteredItems.slice(0, visibleCount).map((item) => {
-            const badges = [
-              item.has_receipt && 'Receipt',
-              item.has_delivery && 'Delivery',
-              item.is_verified && 'Verified'
-            ].filter(Boolean)
-
-            return (
-              <div
-                key={item.id}
-                onClick={() => router.push(`/items?id=${item.id}`)}
-                className="cursor-pointer border rounded-xl p-4 bg-white shadow hover:bg-slate-50 transition-colors flex flex-col justify-between"
-              >
-                {item.images[0] ? (
-                  <Image src={item.images[0]} alt={item.name} width={500} height={300} className="w-full aspect-video object-cover rounded mb-2" />
-                ) : (
-                  <div className="w-full aspect-video bg-gray-100 rounded mb-2" />
-                )}
-                <div>
-                  <div className="text-lg font-semibold truncate">{item.name}</div>
-                  <div className="text-sm text-subtext">₹{item.price}</div>
-                  <div className="text-sm mb-2">{item.city}</div>
-                </div>
-                {badges.length > 0 && (
-                  <div className="flex flex-wrap gap-3 text-xs text-subtext mt-2">
-                    {item.has_receipt && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Receipt</span>}
-                    {item.has_delivery && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Delivery</span>}
-                    {item.is_verified && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Verified</span>}
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => router.push(`/items?id=${item.id}`)}
+                  className="cursor-pointer border rounded-xl p-4 bg-white shadow hover:bg-slate-50 transition-colors flex flex-col justify-between"
+                >
+                  {item.images[0] ? (
+                    <Image src={item.images[0]} alt={item.name} width={500} height={300} className="w-full aspect-video object-cover rounded mb-2" />
+                  ) : (
+                    <div className="w-full aspect-video bg-gray-100 rounded mb-2" />
+                  )}
+                  <div>
+                    <div className="text-lg font-semibold truncate">{item.name}</div>
+                    <div className="text-sm text-subtext">₹{item.price}</div>
+                    <div className="text-sm mb-2">{item.city}</div>
                   </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-          </InfiniteScroll>
-        )}
-      </div>
+                  {badges.length > 0 && (
+                    <div className="flex flex-wrap gap-3 text-xs text-subtext mt-2">
+                      {item.has_receipt && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Receipt</span>}
+                      {item.has_delivery && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Delivery</span>}
+                      {item.is_verified && <span className="flex items-center gap-1"><Image src="/assets/check.svg" alt="Check" width={16} height={16} /> Verified</span>}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </InfiniteScroll>
+      )}
+    </div>
   )
 }
 
@@ -207,6 +216,5 @@ export default function BrowsePage() {
     </QueryClientProvider>
   )
 }
-
 
 

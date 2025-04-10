@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next';
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
+import { UserProvider } from '@/lib/UserContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,19 +19,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={inter.className}>
         <LottiePreload />
-        <Navbar />
-        <Toaster
-          position="top-right"
-          richColors
-          expand
-          visibleToasts={2}
-          closeButton
-          offset={24}
-        />
-        <Analytics />
-        <main className="min-h-[92vh] bg-background text-text">
-          {children}
-        </main>
+        <UserProvider>
+          <Navbar />
+          <Toaster
+            position="top-right"
+            richColors
+            expand
+            visibleToasts={2}
+            closeButton
+            offset={24}
+          />
+          <Analytics />
+          <main className="min-h-[91vh] bg-background text-text">
+            {children}
+          </main>
+        </UserProvider>
       </body>
     </html>
   )
