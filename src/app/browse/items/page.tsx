@@ -23,11 +23,12 @@ interface Item {
   is_verified?: boolean;
   is_sold?: boolean;
   quality_rating: number;
+  created_at?: string;
 }
 
 function ItemSearchContent() {
   const [minPrice, setMinPrice] = useState(0)
-  const [maxPrice, setMaxPrice] = useState(50000)
+  const [maxPrice, setMaxPrice] = useState(999999)
   const [minQuality, setMinQuality] = useState(0)
   const [city, setCity] = useState('')
   const [hasReceipt, setHasReceipt] = useState(false)
@@ -47,13 +48,14 @@ function ItemSearchContent() {
       const { data } = await supabase.from('items').select('*').eq('is_sold', false)
       return data || []
     },
+    staleTime: 0,
   })
 
   const filteredItems = items.filter((item) => {
     const matchesSearch = query
       ? item.name.toLowerCase().includes(query) || item.city.toLowerCase().includes(query)
       : true
-
+      console.log(items)
     return (
       matchesSearch &&
       item.price >= minPrice &&
@@ -186,7 +188,29 @@ function ItemSearchContent() {
                     <div className="w-full aspect-video bg-gray-100 rounded mb-2" />
                   )}
                   <div>
-                    <div className="text-lg font-semibold truncate">{item.name}</div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-lg font-semibold truncate">{item.name}</span>
+                    {item.created_at && (
+                      <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+                      {(() => {
+                        const createdAt = new Date(item.created_at)
+                        const now = new Date()
+                        const diffMs = now.getTime() - createdAt.getTime()
+                        const diffMins = Math.floor(diffMs / (1000 * 60))
+                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+                    
+                        if (diffMins < 60) {
+                          return `Posted ${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`
+                        } else if (diffHours < 24) {
+                          return `Posted ${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+                        } else {
+                          return `Posted ${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+                        }
+                      })()}
+                    </span>
+                    )}
+                  </div>
                     <div className="text-sm text-subtext">₹{item.price}</div>
                     <div className="text-sm mb-2">{item.city}</div>
                   </div>

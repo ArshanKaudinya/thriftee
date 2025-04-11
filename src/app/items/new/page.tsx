@@ -20,6 +20,7 @@ export default function NewItemPage() {
   const [originalReceipt, setOriginalReceipt] = useState(false)
   const [deliveryAvailable, setDeliveryAvailable] = useState(false)
   const [error, setError] = useState('')
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -33,8 +34,10 @@ export default function NewItemPage() {
         return
       }
       setImages(fileArray)
+      setPreviewUrls(fileArray.map(file => URL.createObjectURL(file)))
     }
   }
+  
 
   const handleSubmit = async () => {
     setError('')
@@ -107,7 +110,7 @@ export default function NewItemPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-background text-text relative">
+    <div className="flex flex-col items-center justify-center min-h-[91vh] p-6 bg-background text-text relative">
       {success && (
         <div className="absolute top-6 right-6 bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded-xl animate-fade-out shadow">
           <div className="flex items-center gap-2">
@@ -122,30 +125,32 @@ export default function NewItemPage() {
         <h1 className="text-2xl font-bold text-primary mb-6 text-center">Post a New Item</h1>
 
         <div className="flex flex-col gap-4">
-          <label className="flex flex-col">
-            <span>Item Name<span className="text-red-500"> *</span></span>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
-          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="flex flex-col">
+              <span>Item Name<span className="text-red-500"> *</span></span>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            </label>
 
-          <label className="flex flex-col">
-            <span>Price (₹)<span className="text-red-500"> *</span></span>
-            <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
-          </label>
+            <label className="flex flex-col">
+              <span>Price (₹)<span className="text-red-500"> *</span></span>
+              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            </label>
 
-          <label className="flex flex-col">
-            <span>Locality</span>
-            <input type="text" value={locality} onChange={(e) => setLocality(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
-          </label>
+            <label className="flex flex-col">
+              <span>Locality</span>
+              <input type="text" value={locality} onChange={(e) => setLocality(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text" />
+            </label>
 
-          <label className="flex flex-col">
-            <span>City<span className="text-red-500"> *</span></span>
-            <select value={city} onChange={(e) => setCity(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text font-medium">
-              <option value="">Select City</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Mumbai">Mumbai</option>
-              <option value="Bangalore">Bangalore</option>
-            </select>
-          </label>
+            <label className="flex flex-col">
+              <span>City<span className="text-red-500"> *</span></span>
+              <select value={city} onChange={(e) => setCity(e.target.value)} className="px-4 py-2 rounded-xl border border-subtext bg-background text-text font-medium">
+                <option value="">Select City</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Bangalore">Bangalore</option>
+              </select>
+            </label>
+          </div>
 
           <label className="flex flex-col">
             <span>Description</span>
@@ -158,7 +163,20 @@ export default function NewItemPage() {
             </div>
             <input type="file" accept="image/*" multiple onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
           </label>
-
+          {previewUrls.length > 0 && (
+              <div className="flex flex-wrap gap-3 mt-2">
+                {previewUrls.map((url, idx) => (
+                  <Image
+                    key={idx}
+                    src={url}
+                    alt={`Preview ${idx}`}
+                    width={70}
+                    height={70}
+                    className="rounded-lg object-cover border border-subtext aspect-square"
+                  />
+                ))}
+              </div>
+            )}
           <div className="flex gap-1 items-center">
             {[1, 2, 3, 4, 5].map((star) => (
               <button key={star} onClick={() => setQualityRating(star)}>
@@ -167,19 +185,29 @@ export default function NewItemPage() {
             ))}
           </div>
 
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={originalReceipt} onChange={() => setOriginalReceipt(!originalReceipt)} /> Original Receipt Available
-          </label>
-
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={deliveryAvailable} onChange={() => setDeliveryAvailable(!deliveryAvailable)} /> Delivery Available
-          </label>
+          <div className="flex flex-wrap gap-4 items-center">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={originalReceipt} onChange={() => setOriginalReceipt(!originalReceipt)} /> Original Receipt Available
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={deliveryAvailable} onChange={() => setDeliveryAvailable(!deliveryAvailable)} /> Delivery Available
+            </label>
+          </div>
 
           <button onClick={handleSubmit} disabled={loading} className="bg-slate-400 text-slate-800 py-2 rounded-xl font-medium">
             {loading ? 'Posting...' : 'Post Item'}
           </button>
 
           {error && <p className="text-error mt-2 text-sm text-center">{error}</p>}
+        </div>
+
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => router.push('/items/request')}
+            className="text-sm text-accent underline hover:opacity-80 transition"
+          >
+            Want to post a request instead?
+          </button>
         </div>
       </div>
     </div>

@@ -7,9 +7,9 @@ import { Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const navLinks = [
-  { href: '/browse/items', label: 'Browse' },
-  { href: '/items/new', label: 'Post' },
+  { href: '/browse/items', label: 'Items' },
   { href: '/browse/requests', label: 'Requests' },
+  { href: '/items/new', label: 'Post' },
   { href: '/chat', label: 'Chat' },
 ]
 
