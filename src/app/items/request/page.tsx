@@ -30,7 +30,7 @@ export default function RequestPage() {
       return
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setError('User not logged in')
       setLoading(false)
